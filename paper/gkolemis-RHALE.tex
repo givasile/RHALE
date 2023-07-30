@@ -3,12 +3,21 @@
 \usepackage{graphicx}
 \usepackage{latexsym}
 
-\ecaisubmission      % inserts page numbers. Use only for submission of paper.
-                      % Do NOT use for camera-ready version of paper.
+% \ecaisubmission      % inserts page numbers. Use only for submission of paper.
+%                       % Do NOT use for camera-ready version of paper.
 
 %\paperid{123}        % paper id for double blind submission
 
 \usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    % linkcolor=blue,
+    % filecolor=magenta,
+    % urlcolor=cyan,
+    % pdftitle={Overleaf Example},
+    % pdfpagemode=FullScreen,
+  }
+
 \usepackage{subcaption}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{bbm}
@@ -36,13 +45,14 @@
 
 \title{RHALE: Robust and Heterogeneity-aware Accumulated Local Effects}
 
-\author[A]{\fnms{First}~\snm{Author}\orcid{....-....-....-....}\thanks{Corresponding Author. Email: somename@university.edu.}}
-\author[B]{\fnms{Second}~\snm{Author}\orcid{....-....-....-....}}
-\author[B]{\fnms{Third}~\snm{Author}\orcid{....-....-....-....}} % use of \orcid{} is optional
+\author[A, B]{\fnms{Vasilis}~\snm{Gkolemis}} %\orcid{0000-0002-2636-0245}}
+\author[B]{\fnms{Theodore}~\snm{Dalamagas}} % \orcid{0000-0002-5002-7901}}
+\author[C]{\fnms{Eirini}~\snm{Ntoutsi}} % \orcid{0000-0001-5729-1003}}
+\author[A]{\fnms{Christos}~\snm{Diou}} % \orcid{0000-0002-2461-1928}}
 
-
-\address[A]{Short Affiliation of First Author}
-\address[B]{Short Affiliation of Second Author and Third Author}
+\address[A]{Harokopio University of Athens}
+\address[B]{ATHENA RC}
+\address[C]{Universitat der Bundeswehr Munchen}
 
 \begin{abstract}
 Accumulated Local Effects (ALE) is a widely-used explainability method for isolating the average effect of a feature on the output, because it handles cases with correlated features well. However, it has two limitations. First, it does not quantify the deviation of instance-level (local) effects from the average (global) effect, known as heterogeneity. Second, for estimating the average effect, it partitions the feature domain into user-defined, fixed-sized bins, where different bin sizes may lead to inconsistent ALE estimations. To address these limitations, we propose Robust and Heterogeneity-aware ALE (RHALE). RHALE quantifies the heterogeneity by considering the standard deviation of the local effects and automatically determines an optimal variable-size bin-splitting. In this paper, we prove that to achieve an unbiased approximation of the standard deviation of local effects within each bin, bin splitting must follow a set of sufficient conditions. Based on these conditions, we propose an algorithm that automatically determines the optimal partitioning, balancing the estimation bias and variance. Through evaluations on synthetic and real datasets, we demonstrate the superiority of RHALE compared to other methods, including the advantages of automatic bin splitting, especially in cases with correlated features.
@@ -207,9 +217,7 @@ The main contributions of this paper are:
   effect methods, both in terms of accuracy and efficiency.
 \end{itemize}
 
-The code for reproducing all the
-experiments is provided along with the manuscript and will become
-publicly available upon acceptance.
+The code for reproducing all experiments is provided at \href{https://github.com/givasile/RHALE}{https://github.com/givasile/RHALE}.
 
 \section{Background and related work}
 \label{sec:background}
@@ -970,6 +978,10 @@ In this paper, we have introduced Robust and Heterogeneity-aware ALE (RHALE), a 
 While the standard deviation of local effects is a good way to express the \textit{level} of heterogeneity, it is challenging to interpret the \textit{type} of heterogeneity. Therefore, we use violin plots to provide the distribution of local effects (type of heterogeneity), but their explanatory power is limited within each bin. At a global level, i.e., between the bins, the user can only determine the magnitude of heterogeneity. Finally, the automatic-binning algorithm comes with three hyperparameters, \(K_{\max}, \alpha, N_{\mathtt{PPB}}\). Although, their default values work well in most cases, on exceptional scenarios, such as a very small dataset, may need to be adjusted appropriately for an optimal bin splitting.
 
 \clearpage
+
+\ack
+
+This work was supported by the XMANAI project (grant agreement No 957362), which has received funding by the European Regional Development Fund of the EU (EU 2020 Programme, ICT-38-2020 - Artificial intelligence for manufacturing).
 
 \bibliography{bibliography}
 \end{document}
