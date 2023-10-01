@@ -1,0 +1,253 @@
+\documentclass[final]{beamer}
+%% Possible paper sizes: a0, a0b, a1, a2, a3, a4.
+%% Possible orientations: portrait, landscape
+%% Font sizes can be changed using the scale option.
+\usepackage[size=a0,orientation=portrait,scale=1.3]{beamerposter}
+
+\usetheme{gemini}
+\usecolortheme{seagull}
+\useinnertheme{rectangles}
+
+% ====================
+% Packages
+% ====================
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{bm, amsmath}
+\usepackage{hyperref}
+\graphicspath{{./../../DALE/ACML-poster}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+% \usepackage[most]{tcolorox}
+\usepackage{wrapfig}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\newcommand{\xb}{\mathbf{x}}
+
+% ====================
+% Lengths
+% ====================
+
+% If you have N columns, choose \sepwidth and \colwidth such that
+% (N+1)*\sepwidth + N*\colwidth = \paperwidth
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.03\paperwidth}
+\setlength{\colwidth}{0.45\paperwidth}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+% ====================
+% Logo (optional)
+% ====================
+
+% LaTeX logo taken from https://commons.wikimedia.org/wiki/File:LaTeX_logo.svg
+% use this to include logos on the left and/or right side of the header:
+\logoright{\includegraphics[height=5cm]{logos/athena-278x300.png}}
+\logoleft{\includegraphics[height=4cm]{logos/dit-logo.png}}
+
+% ====================
+% Footer (optional)
+% ====================
+
+\footercontent{
+	ECAI 2023, Krakow, Poland \hfill
+	\insertdate \hfill
+	\href{mailto:vgkolemis@athenarc.gr}{\texttt{vgkolemis@athenarc.gr}}
+}
+% (can be left out to remove footer)
+
+% ====================
+% My own customization
+% - BibLaTeX
+% - Boxes with tcolorbox
+% - User-defined commands
+% ====================
+\input{custom-defs.tex}
+
+%% Reference Sources
+\addbibresource{refs.bib}
+\renewcommand{\pgfuseimage}[1]{\includegraphics[scale=2.0]{#1}}
+
+\title{RHALE: Robust and Heterogeneity-aware Accumulated Local Effects}
+
+\author{Vasilis Gkolemis \inst{1, 2} \and Theodore Dalamagas \inst{1} \and Eirini Ntoutsi \inst{3} \and Christos Diou\inst{2}}
+
+\institute[shortinst]{\inst{1} ATHENA Research Center \samelineand \inst{2} Harokopio University of Athens \samelineand \inst{3} Bundeswehr University of Munich}
+
+\date{November 12-14, 2022}
+
+\begin{document}
+	
+\begin{frame}[t]
+	\begin{columns}[t] \separatorcolumn
+		\begin{column}{\colwidth}
+      \begin{alertblock}{TL;DR} \Large{\textbf{RHALE:} \textbf{Robust} and \textbf{Heterogeneity-aware} ALE}
+        \begin{itemize}
+          \item Robust: auto-bin splitting
+          \item Heterogeneity: $\pm$ from the average
+        \end{itemize}
+        \vspace{10mm}
+        \large{\textbf{keywords:} eXplainable AI, ALE, Heterogeneity, Feature Effect}
+			\end{alertblock}
+
+			\begin{block}{Motivation - ALE limitations}{}
+        ALE~(\cite{Apley2020}) is a SotA feature efect method but it has two limitations:
+        \begin{itemize}
+        \item it does not quantify the heterogeneity, i.e., deviation of the instance-level effects from the main (average) effect
+          \item it is vulnerable to poor approximations, due to the bin-splitting step
+        \end{itemize}
+        \begin{figure}
+          \centering
+          \includegraphics[width=0.49\textwidth]{./../code/concept_figure/exp_1_ale_5_bins_0.pdf}
+          \includegraphics[width=0.49\textwidth]{./../code/concept_figure/exp_1_ale_50_bins_0.pdf}
+          \caption{Left: ALE approximation with a narrow bin-splitting (5 bins). Right: ALE approximation with a dense bin-splitting (50 bins)}
+          \label{fig:acc-1}
+        \end{figure}
+        \begin{itemize}
+        \item Both approximations are bad:
+          \begin{itemize}
+          \item Narrow bin-splitting hides fine-grain details
+            \item Dense bin-splitting is noisy (low samples per bin rate)
+          \end{itemize}
+          \item No information regarding the heterogeneity
+        \end{itemize}
+			\end{block}
+
+
+      %%%%%% DALE vs ALE
+      \begin{defbox}{Simple approach: ALE + Heterogeneity}{}
+
+        \begin{tcolorbox}[ams equation*, title=ALE main effect definition]
+            f^{\mathtt{ALE}}(x_s) = \int_{x_{s,\min}}^{x_s} \underbrace{\mathbb{E}_{X_c|X_s=z}\left [f^s (z, X_c)\right ]}_{\mu(z)} \partial z
+        \end{tcolorbox}
+
+        \begin{tcolorbox}[ams equation*, title=ALE main effect approximation]
+          \hat{f}^{\mathtt{ALE}}(x_s) =
+          \Delta x \sum_k^{k_x} \underbrace{\frac{1}{|\mathcal{S}_k|}
+            \sum_{i:\xb^i \in \mathcal{S}_k} [\frac{\partial
+                f}{\partial x_s}(x_s^i, \bm{x^i_c})]}_{\text{bin effect}: \hat{\mu}(z)}
+        \end{tcolorbox}
+
+        \begin{tcolorbox}[ams equation*, title=ALE heterogeneity definition]
+          \sigma(x_s) = \sqrt{\int_{x_{s,\min}}^{x_s} \underbrace{\mathbb{E}_{X_c|X_s=z}\left [ \left (f^s (z, X_c) - \mu(z) \right )^2 \right ] \partial z}_{\sigma^2(z)}}
+        \end{tcolorbox}
+
+
+        \begin{tcolorbox}[ams equation*, title=ALE heterogeneity approximation]
+  \mathtt{STD}(x_s) = \sqrt{\sum_{k=1}^{k_x} (z_k - z_{k-1})^2 \underbrace{\frac{1}{|\mathcal{S}_k| - 1}
+\sum_{i:\mathbf{x}^i \in \mathcal{S}_k} \left ( f^s(\mathbf{x}^i) -
+  \hat{\mu}(z_1, z_2) \right )^2}_{\hat{\sigma^2(z)}}}
+        \end{tcolorbox}
+
+  \end{defbox}
+
+      %%%%%% DALE vs ALE
+      \begin{defbox}{Simple but wrong: ALE + Heterogeneity}{}
+
+        \begin{figure}
+          \centering
+          \includegraphics[width=0.49\textwidth]{./../code/concept_figure/exp_1_rhale_5_bins_0.pdf}
+          \includegraphics[width=0.49\textwidth]{./../code/concept_figure/exp_1_rhale_50_bins_0.pdf}
+          \caption{Left: approximation with narrow bin-splitting (5 bins) and (Right) with dense-bin splitting}
+          \label{fig:acc-1}
+        \end{figure}
+
+        \vspace{2mm}
+
+        \begin{enumerate}
+        \item Fixed-size bin splitting can ruin the estimation of the heterogeneity
+        \end{enumerate}
+
+  \end{defbox}
+
+\end{column}
+
+\separatorcolumn
+\begin{column}{\colwidth}
+
+  % DALE ACCURACY
+  \begin{block}{RHALE: Robust and Heterogeneity-aware ALE}
+
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.95\textwidth]{./../code/concept_figure/exp_1_rhale_0.pdf}
+      \caption{Narrow bins (\(K=40\)) \(\Rightarrow\) limited
+        \(\frac{\text{samples}}{\text{bin}}\) \(\Rightarrow\) both plots are noisy }
+      \label{fig:acc-1}
+    \end{figure}
+
+    \vspace{2mm}
+    Simple but correct:
+    \begin{itemize}
+    \item Automatically finds the \textbf{optimal} bin-splitting
+    \item Optimal $\Rightarrow$ best approximation of the average (ALE) effect
+    \item Optimal $\Rightarrow$ best approximation of the heterogeneity 
+    \end{itemize}
+  \end{block}
+
+      \begin{defbox}{Optimal bin-splitting}{}
+
+        In the paper, we \textbf{formally prove}:  
+        \begin{enumerate}
+        \item the conditions under which a bin does not hide the finer details of the main effect
+        \item the conditions under which a bin is an unbiased approximator of the heterogeneity
+
+        \item that given (1) and (2), increasing bin size leads to a reduction in estimation variance
+        \end{enumerate}
+
+        \vspace{10mm}
+
+        Based on the above, we formulate bin-splitting as an optimization problem and propose an efficient solution using dynamic programming.
+
+  \end{defbox}
+
+  
+      \begin{alertblock}{Conclusion} In case you work with a differentiable model, as in Deep Learning, use RHALE to:
+        \begin{itemize}
+        \item quantify the heterogeneity of the ALE plot, i.e., the deviation of the instance-level effects from the average effect
+        \item get a robust approximation of (a) the main ALE effect and (b) the heterogeneity, using automatic bin-splitting
+      \end{itemize}
+    \end{alertblock}
+
+    \begin{block}{References}
+      \printbibliography[heading=none]
+      \begin{itemize}
+      \item \large Paper repo: \href{git@github.com:givasile/RHALE.git}{git@github.com:givasile/RHALE.git}
+      \item \large Personal site: \href{givasile.github.io}{givasile.github.io}
+      \item \large Twitter: \href{https://twitter.com/givasile1}{twitter.com/givasile1}
+      
+      \end{itemize}
+
+	\end{block}
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.49\textwidth]{./Publications.png}
+      \end{figure}
+
+  
+\end{column} \separatorcolumn
+\end{columns}
+
+% \begin{columns}[t]\separatorcolumn
+%     \begin{column}{1.3\colwidth}
+%       \large
+% 	\end{column} \separatorcolumn
+% 	\begin{column}{0.7\colwidth}
+% \end{column}
+% \separatorcolumn
+% \end{columns}
+
+
+\end{frame}
+
+\end{document}
